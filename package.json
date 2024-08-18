@@ -1,0 +1,40 @@
+{
+  "name": "@pixelpirates/smooth-shift-lock",
+  "version": "1.0.0",
+  "description": "TypeScript port of Rixtys99's Smooth Shift Lock module",
+  "main": "src",
+  "types": "src/types/index.d.ts",
+  "keywords": [
+    "roblox-ts",
+    "rbxts",
+    "roblox",
+    "smooth",
+    "shift",
+    "lock"
+  ],
+  "author": "Tim Ritter <timrittermail@gmail.com>",
+  "license": "ISC",
+  "homepage": "https://github.com/Coyenn/smooth-shift-lock",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Coyenn/smooth-shift-lock.git"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@rbxts/compiler-types": "^2.3.0-types.2",
+    "@rbxts/types": "^1.0.799",
+    "@typescript-eslint/eslint-plugin": "^8.1.0",
+    "@typescript-eslint/parser": "^8.1.0",
+    "eslint": "^9.9.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-roblox-ts": "^0.0.36",
+    "prettier": "^3.2.5"
+  }
+}
