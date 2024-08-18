@@ -37,29 +37,54 @@ local PlayerMouse = LocalPlayer:GetMouse()
 local Camera = Workspace.CurrentCamera
 
 --// Configuration
-local Config = {
-	MOBILE_SUPPORT = false, --// Adds a button to toggle the shift lock for touchscreen devices
-	SMOOTH_CHARACTER_ROTATION = true, --// If your character should rotate smoothly or not
-	CHARACTER_ROTATION_SPEED = 3, --// How quickly character rotates smoothly
-	TRANSITION_SPRING_DAMPER = 0.7, --// Camera transition spring damper, test it out to see what works for you
-	CAMERA_TRANSITION_IN_SPEED = 10, --// How quickly locked camera moves to offset position
-	CAMERA_TRANSITION_OUT_SPEED = 14, --// How quickly locked camera moves back from offset position
-	LOCKED_CAMERA_OFFSET = Vector3.new(1.75, 0.25, 0), --// Locked camera offset
+local defaultConfig = {
+	mobileSupport = false, --// Adds a button to toggle the shift lock for touchscreen devices
+	smoothCharacterRotation = true, --// If your character should rotate smoothly or not
+	characterRotationSpeed = 3, --// How quickly character rotates smoothly
+	transitionSpringDamper = 0.7, --// Camera transition spring damper, test it out to see what works for you
+	cameraTransitionInSpeed = 10, --// How quickly locked camera moves to offset position
+	cameraTransitionOutSpeed = 14, --// How quickly locked camera moves back from offset position
+	lockedCameraOffset = Vector3.new(1.75, 0.25, 0), --// Locked camera offset
 	--// Locked mouse icon
-	LOCKED_MOUSE_ICON = "rbxasset://textures/MouseLockedCursor.png",
+	lockedMouseIcon = "rbxasset://textures/MouseLockedCursor.png",
 	--// Shift lock keybinds
-	SHIFT_LOCK_KEYBINDS = { Enum.KeyCode.LeftShift, Enum.KeyCode.RightShift },
+	shiftLockKeybinds = { Enum.KeyCode.LeftShift, Enum.KeyCode.RightShift },
+}
+
+type Config = {
+	mobileSupport: boolean,
+	smoothCharacterRotation: boolean,
+	characterRotationSpeed: number,
+	transitionSpringDamper: number,
+	cameraTransitionInSpeed: number,
+	cameraTransitionOutSpeed: number,
+	lockedCameraOffset: Vector3,
+	lockedMouseIcon: string,
+	shiftLockKeybinds: { Enum.KeyCode },
 }
 
 --// [ Constructor: ]
-function SmoothShiftLock.new()
+function SmoothShiftLock.new(config: Config?)
 	local self = setmetatable({}, SmoothShiftLock)
+
+	--// Configuration
+	self.config = {
+		mobileSupport = config and config.mobileSupport or defaultConfig.mobileSupport,
+		smoothCharacterRotation = config and config.smoothCharacterRotation or defaultConfig.smoothCharacterRotation,
+		characterRotationSpeed = config and config.characterRotationSpeed or defaultConfig.characterRotationSpeed,
+		transitionSpringDamper = config and config.transitionSpringDamper or defaultConfig.transitionSpringDamper,
+		cameraTransitionInSpeed = config and config.cameraTransitionInSpeed or defaultConfig.cameraTransitionInSpeed,
+		cameraTransitionOutSpeed = config and config.cameraTransitionOutSpeed or defaultConfig.cameraTransitionOutSpeed,
+		lockedCameraOffset = config and config.lockedCameraOffset or defaultConfig.lockedCameraOffset,
+		lockedMouseIcon = config and config.lockedMouseIcon or defaultConfig.lockedMouseIcon,
+		shiftLockKeybinds = config and config.shiftLockKeybinds or defaultConfig.shiftLockKeybinds,
+	}
 
 	--// Utilities
 	self._runtimeMaid = Maid.new()
 	self._shiftlockMaid = Maid.new()
 	self._cameraOffsetSpring = Spring.new(Vector3.new(0, 0, 0))
-	self._cameraOffsetSpring.Damper = Config.TRANSITION_SPRING_DAMPER
+	self._cameraOffsetSpring.Damper = self.config.transitionSpringDamper
 
 	--// Variables
 	self.enabled = false
@@ -80,7 +105,7 @@ function SmoothShiftLock:enable()
 	--// Bind Keybinds
 	ContextActionService:BindActionAtPriority("ShiftLockSwitchAction", function(Name, State, Input)
 		return self:_doShiftLockSwitch(Name, State, Input)
-	end, Config.MOBILE_SUPPORT, Enum.ContextActionPriority.Medium.Value, unpack(Config.SHIFT_LOCK_KEYBINDS))
+	end, self.config.mobileSupport, Enum.ContextActionPriority.Medium.Value, unpack(self.config.shiftLockKeybinds))
 
 	--// Camera Offset
 	self._runtimeMaid:GiveTask(RunService.RenderStepped:Connect(function()
@@ -134,16 +159,16 @@ end
 
 --// Update the mouse icon
 function SmoothShiftLock:_updateMouseIcon()
-	PlayerMouse.Icon = (self.enabled and Config.LOCKED_MOUSE_ICON :: string) or ""
+	PlayerMouse.Icon = (self.enabled and self.config.lockedMouseIcon :: string) or ""
 end
 
 --// Transition the camera to lock offset
 function SmoothShiftLock:_transitionLockOffset()
 	if self.enabled then
-		self._cameraOffsetSpring.Speed = Config.CAMERA_TRANSITION_IN_SPEED
-		self._cameraOffsetSpring.Target = Config.LOCKED_CAMERA_OFFSET
+		self._cameraOffsetSpring.Speed = self.config.cameraTransitionInSpeed
+		self._cameraOffsetSpring.Target = self.config.lockedCameraOffset
 	else
-		self._cameraOffsetSpring.Speed = Config.CAMERA_TRANSITION_OUT_SPEED
+		self._cameraOffsetSpring.Speed = self.config.cameraTransitionOutSpeed
 		self._cameraOffsetSpring.Target = Vector3.new(0, 0, 0)
 	end
 end
@@ -174,11 +199,11 @@ function SmoothShiftLock:toggleShiftLock(enable: boolean?)
 			if self.Humanoid.Sit then
 				return
 			end
-			if Config.SMOOTH_CHARACTER_ROTATION then
+			if self.config.smoothCharacterRotation then
 				local x, y, z = Camera.CFrame:ToOrientation()
 				self.RootPart.CFrame = self.RootPart.CFrame:Lerp(
 					CFrame.new(self.RootPart.Position) * CFrame.Angles(0, y, 0),
-					Delta * 5 * Config.CHARACTER_ROTATION_SPEED
+					Delta * 5 * self.config.characterRotationSpeed
 				)
 			else
 				local x, y, z = Camera.CFrame:ToOrientation()
